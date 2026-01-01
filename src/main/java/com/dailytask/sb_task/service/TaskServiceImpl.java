@@ -1,6 +1,8 @@
 package com.dailytask.sb_task.service;
 
 import com.dailytask.sb_task.model.Task;
+import com.dailytask.sb_task.repository.TaskRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -10,46 +12,49 @@ import java.util.List;
 
 @Service
 public class TaskServiceImpl implements TaskService{
-    private List<Task> tasks = new ArrayList<>();
-    private Long id=0L;
+    //private List<Task> tasks = new ArrayList<>();
+
+    @Autowired
+    private TaskRepository taskRepository;
+
     @Override
     public List<Task> getTask() {
-        return tasks;
+        return taskRepository.findAll();
     }
 
     @Override
     public void createTask(Task task) {
-        id = id+1;
-        task.setId(id);
-        tasks.add(task);
+        taskRepository.save(task);
     }
 
     @Override
     public String deleteTask(Long id) {
-        for(int i=0;i<tasks.size();i++){
-            if(tasks.get(i).getId().equals(id)){
-                tasks.remove(i);
-                return "Task with id = "+id+" deleted successfully";
-            }
+        if (!taskRepository.existsById(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Task with id = " + id + " not found"
+            );
         }
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Task with id = " + id + " not found"
-        );
+
+        taskRepository.deleteById(id);
+        return "Task with id = " + id + " deleted successfully";
     }
+
 
     @Override
     public Task updateTask(Long id, Task task) {
-        for(int i=0;i<tasks.size();i++){
-            if(tasks.get(i).getId().equals(id)){
-                task.setId(id);
-                tasks.set(i,task);
-                return tasks.get(i);
-            }
-        }
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Task with id = " + id + " not found"
-        );
+
+        Task existingTask = taskRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Task with id = " + id + " not found"
+                ));
+
+        // update fields (partial update – realistic)
+        existingTask.setDescription(task.getDescription());
+        existingTask.setStatus(task.getStatus());
+
+        return taskRepository.save(existingTask);
     }
+
 }
