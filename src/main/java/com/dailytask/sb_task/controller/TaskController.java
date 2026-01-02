@@ -1,6 +1,8 @@
 package com.dailytask.sb_task.controller;
 
 import com.dailytask.sb_task.model.Task;
+import com.dailytask.sb_task.payload.TaskDTO;
+import com.dailytask.sb_task.payload.TaskResponse;
 import com.dailytask.sb_task.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +22,15 @@ public class TaskController {
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<List<Task>> getTask(){
-        List<Task> task = taskService.getTask();
-        return new ResponseEntity<>(task,HttpStatus.OK);
+    public ResponseEntity<TaskResponse> getTask(){
+        TaskResponse taskResponse = taskService.getTask();
+        return new ResponseEntity<>(taskResponse,HttpStatus.OK);
     }
 
     @PostMapping("/tasks")
-    public ResponseEntity<String> createTask(@RequestBody Task task){
-        taskService.createTask(task);
-        String msg = "Task added successfully";
-        return new ResponseEntity<>(msg,HttpStatus.CREATED);
+    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskDTO taskDTO){
+        TaskDTO taskDTO1 = taskService.createTask(taskDTO);
+        return new ResponseEntity<>(taskDTO1,HttpStatus.CREATED);
     }
 
     @DeleteMapping("tasks/{id}")
@@ -44,9 +45,9 @@ public class TaskController {
     }
 
     @PutMapping("/tasks/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task){
-        Task taskReturned = taskService.updateTask(id, task);
-        return ResponseEntity.ok(taskReturned);
+    public ResponseEntity<TaskDTO> updateTask(@PathVariable Long id, @RequestBody TaskDTO taskDTO){
+        TaskDTO taskReturned = taskService.updateTask(id, taskDTO);
+        return new ResponseEntity<>(taskReturned,HttpStatus.OK);
     }
 
 }
