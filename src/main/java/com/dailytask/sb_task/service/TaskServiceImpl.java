@@ -39,8 +39,7 @@ public class TaskServiceImpl implements TaskService{
     public TaskDTO createTask(TaskDTO taskDTO) {
         Task task = modelMapper.map(taskDTO, Task.class);
         Task savedTask = taskRepository.save(task);
-        TaskDTO savedTaskDTO = modelMapper.map(savedTask, TaskDTO.class);
-        return savedTaskDTO;
+        return modelMapper.map(savedTask, TaskDTO.class);
     }
 
     @Override
