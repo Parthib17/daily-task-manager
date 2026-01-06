@@ -1,7 +1,10 @@
 package com.dailytask.sb_task.service;
 
 import com.dailytask.sb_task.model.Task;
+import com.dailytask.sb_task.payload.TaskDTO;
+import com.dailytask.sb_task.payload.TaskResponse;
 import com.dailytask.sb_task.repository.TaskRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,14 +20,26 @@ public class TaskServiceImpl implements TaskService{
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Override
-    public List<Task> getTask() {
-        return taskRepository.findAll();
+    public TaskResponse getTask() {
+        List<Task> tasks= taskRepository.findAll();
+        List<TaskDTO> taskDTO = tasks.stream()
+                .map(task -> modelMapper.map(task, TaskDTO.class))
+                .toList();
+
+        TaskResponse taskResponse = new TaskResponse();
+        taskResponse.setContent(taskDTO);
+        return taskResponse;
     }
 
     @Override
-    public void createTask(Task task) {
-        taskRepository.save(task);
+    public TaskDTO createTask(TaskDTO taskDTO) {
+        Task task = modelMapper.map(taskDTO, Task.class);
+        Task savedTask = taskRepository.save(task);
+        return modelMapper.map(savedTask, TaskDTO.class);
     }
 
     @Override
@@ -42,7 +57,9 @@ public class TaskServiceImpl implements TaskService{
 
 
     @Override
-    public Task updateTask(Long id, Task task) {
+    public TaskDTO updateTask(Long id, TaskDTO taskDTO) {
+
+        Task task = modelMapper.map(taskDTO,Task.class);
 
         Task existingTask = taskRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -54,7 +71,8 @@ public class TaskServiceImpl implements TaskService{
         existingTask.setDescription(task.getDescription());
         existingTask.setStatus(task.getStatus());
 
-        return taskRepository.save(existingTask);
+        Task task1 = taskRepository.save(existingTask);
+        return modelMapper.map(task1, TaskDTO.class);
     }
 
 }
